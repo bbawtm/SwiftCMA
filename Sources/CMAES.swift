@@ -84,7 +84,7 @@ public class CMAES: Codable {
 	/// Step size, standard deviation.
 	private(set) public var stepSigma: Double
 	/// Points for recombination.
-	let mu: Int
+	public let mu: Int
 	/// Variance-effectiveness.
 	let mueff: Double
 	/// Recombination weights.
@@ -123,7 +123,7 @@ public class CMAES: Codable {
 	// MARK: - Initialization
 	
 	/// Initializes a new CMA-ES run.
-	public init(startSolution: Vector, populationSize: Int, stepSigma: Double, searchSpaceConfiguration: SearchSpaceConfiguration? = nil) {
+	public init(startSolution: Vector, populationSize: Int, mu: Int? = nil, stepSigma: Double, searchSpaceConfiguration: SearchSpaceConfiguration? = nil) {
 		n = startSolution.count
 		xmean = startSolution
 		self.populationSize = populationSize
@@ -136,18 +136,19 @@ public class CMAES: Codable {
 		}
 		
 		// Selection parameter initialization.
-		mu = populationSize / 2
+		self.mu = mu ?? populationSize / 2
+		precondition(self.mu > 0 && self.mu <= populationSize, "mu must be in range 1...populationSize")
 		weights = Vector.zeros(populationSize)
 		for i in 0..<populationSize {
-			if i < mu {
-				weights[i] = log(Double(mu) + 0.5) - log(Double(i) + 1.0)
+			if i < self.mu {
+				weights[i] = log(Double(self.mu) + 0.5) - log(Double(i) + 1.0)
 			} else {
 				weights[i] = 0.0
 			}
 		}
-		let weightsSum = Vector(weights[0..<mu]).sum
+		let weightsSum = Vector(weights[0..<self.mu]).sum
 		weights = weights.map { $0 / weightsSum } // Normalize.
-		mueff = Vector(weights[0..<mu]).sum * Vector(weights[0..<mu]).sum / Vector(weights[0..<mu]).squared.sum
+		mueff = Vector(weights[0..<self.mu]).sum * Vector(weights[0..<self.mu]).sum / Vector(weights[0..<self.mu]).squared.sum
 		
 		// Adaptation parameter initialization.
 		cc = (4.0 + mueff / Double(n)) / (Double(n) + 4.0 + 2.0 * mueff / Double(n))

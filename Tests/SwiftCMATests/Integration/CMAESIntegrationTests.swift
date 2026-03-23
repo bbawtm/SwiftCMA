@@ -102,9 +102,36 @@ final class CMAESIntegrationTests: XCTestCase {
 		}
 	}
 
+	func testCustomMu() {
+		let dimensions = 3
+		let populationSize = 7
+		let startSolution = Array(repeating: 1.0, count: dimensions)
+		let cmaes = CMAES(startSolution: startSolution, populationSize: populationSize, mu: 5, stepSigma: 0.3)
+		XCTAssertEqual(cmaes.mu, 5)
+
+		let candidates = cmaes.startEpoch()
+		XCTAssertEqual(candidates.count, populationSize)
+
+		let fitnesses = candidates.map { candidate -> (Vector, Double) in
+			let value = candidate.map { $0 * $0 }.reduce(0, +)
+			return (candidate, value)
+		}
+		cmaes.finishEpoch(candidateFitnesses: fitnesses)
+	}
+
+	func testDefaultMu() {
+		let dimensions = 3
+		let populationSize = 8
+		let startSolution = Array(repeating: 1.0, count: dimensions)
+		let cmaes = CMAES(startSolution: startSolution, populationSize: populationSize, stepSigma: 0.3)
+		XCTAssertEqual(cmaes.mu, populationSize / 2)
+	}
+
 	static var allTests = [
         ("testCMAES", testCMAES),
 		("testConstrainedCMAES", testConstrainedCMAES),
+		("testCustomMu", testCustomMu),
+		("testDefaultMu", testDefaultMu),
     ]
 	
 }
