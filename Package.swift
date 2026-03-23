@@ -1,10 +1,14 @@
-// swift-tools-version:5.1
+// swift-tools-version:5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
 let package = Package(
     name: "SwiftCMA",
+    platforms: [
+        .macOS(.v14),
+        .iOS(.v17)
+    ],
     products: [
         // Products define the executables and libraries produced by a package, and make them visible to other packages.
         .library(
@@ -21,7 +25,11 @@ let package = Package(
         .target(
             name: "SwiftCMA",
             dependencies: [],
-			path: "Sources"),
+			path: "Sources/SwiftCMA"),
+        .executableTarget(
+            name: "BIPOPDemo",
+            dependencies: ["SwiftCMA"],
+            path: "Sources/BIPOPDemo"),
         .testTarget(
             name: "SwiftCMATests",
             dependencies: ["SwiftCMA"]),
